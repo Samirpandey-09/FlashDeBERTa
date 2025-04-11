@@ -45,35 +45,32 @@ def _fwd_kernel_deberta_disentangled_attention(
     input_dtype = Q.dtype.element_ty
 
     start_z = tl.program_id(0)
-
     off_h = tl.program_id(1)
-
     off_b = tl.load(mid_batch + start_z)
     off_m = tl.load(mid_start + start_z)
 
     q_start = tl.load(cu_seqlens_q + off_b)
     q_end = tl.load(cu_seqlens_q + off_b + 1)
-
     k_start = tl.load(cu_seqlens_k + off_b)
     k_end = tl.load(cu_seqlens_k + off_b + 1)
 
-    lM = q_end-q_start
-    lN = k_end-k_start
+    lM = q_end - q_start
+    lN = k_end - k_start
     P_SEQ = lM - lN
 
     log2e: tl.constexpr = 1.4426950408889634
 
-    L += q_start * H + off_h
+    L += off_m * H + off_h
 
     offs_m_base = tl.arange(0, BLOCK_M)
-    offs_m = offs_m_base+off_m
+    offs_m = offs_m_base + off_m
     offs_m_relative = offs_m - q_start
     offs_n_base = tl.arange(0, BLOCK_N)
     offs_k = tl.arange(0, BLOCK_DMODEL)
     
-    q_ptrs = Q + (offs_m[:, None] * stride_qz + off_h * stride_qh + offs_k[None, :] * stride_qk) # (BLOCK_M, BLOCK_DMODEL)
-    o_ptrs = O + (offs_m[:, None] * stride_oz + off_h * stride_oh + offs_k[None, :] * stride_ok) # (BLOCK_M, BLOCK_DMODEL)
-    l_ptrs = L + offs_m_base*H
+    q_ptrs = Q + (offs_m[:, None] * stride_qz + off_h * stride_qh + offs_k[None, :] * stride_qk)
+    o_ptrs = O + (offs_m[:, None] * stride_oz + off_h * stride_oh + offs_k[None, :] * stride_ok)
+    l_ptrs = L + offs_m_base * H
 
     mask_m = offs_m < q_end
     q = tl.load(q_ptrs, mask=mask_m[:, None], cache_modifier=".cg")
@@ -86,7 +83,7 @@ def _fwd_kernel_deberta_disentangled_attention(
 
     if IS_CAUSAL:
         hi = tl.minimum(lN, P_SEQ + (off_m + 1) * BLOCK_M)
-        if lM>lN:
+        if lM > lN:
             hi = tl.maximum(0, hi)
     else:
         hi = lN
@@ -95,61 +92,48 @@ def _fwd_kernel_deberta_disentangled_attention(
     l_i = tl.zeros([BLOCK_M], dtype=tl.float32)
     acc = tl.zeros([BLOCK_M, BLOCK_DMODEL], dtype=tl.float32)
 
-    offs_n_init = k_start+offs_n_base
-    k_ptrs = K + (offs_k[:, None] * stride_vk + offs_n_init[None, :] * stride_vz + off_h * stride_kh) # (BLOCK_DMODEL, BLOCK_N)
-    v_ptrs = V + (offs_n_init[:, None] * stride_kz + offs_k[None, :] * stride_kk + off_h * stride_vh) # (BLOCK_N, BLOCK_DMODEL)
+    offs_n_init = k_start + offs_n_base
+    k_ptrs = K + (offs_k[:, None] * stride_vk + offs_n_init[None, :] * stride_vz + off_h * stride_kh)
+    v_ptrs = V + (offs_n_init[:, None] * stride_kz + offs_k[None, :] * stride_kk + off_h * stride_vh)
 
     if HAS_C2P:
-        k_pos_ptrs = K_POS +  (offs_m[:, None] * stride_pk0 + off_h * stride_pk1)
-    if HAS_P2C:
-        q_pos_ptrs = Q_POS +  (offs_n_init[:, None] * stride_pq0 + off_h * stride_pq1)
+        k_pos_ptrs = K_POS + (offs_m[:, None] * stride_pk0 + off_h * stride_pk1)
 
     for start_n in range(0, hi, BLOCK_N):
         start_n = tl.multiple_of(start_n, BLOCK_N)
         offs_n = start_n + offs_n_base
 
-        mask_n = offs_n < N
+        mask_n = offs_n < lN
         k = tl.load(k_ptrs, mask=mask_n[None, :], cache_modifier=".cg")
         v = tl.load(v_ptrs, mask=mask_n[:, None], cache_modifier=".cg")
 
         s = tl.zeros([BLOCK_M, BLOCK_N], dtype=input_dtype)
         s += tl.dot(q, k) * sm_scale
 
-        relative_positions = offs_m_relative[:, None]-offs_n[None, :]  # shape: (BLOCK_M, BLOCK_N)
-
+        relative_positions = offs_n[None, :] - offs_m_relative[:, None]
         sign = tl.where(relative_positions > 0.0, 1.0, tl.where(relative_positions < 0.0, -1.0, 0.0))
-
         mid_val = NUM_BUCKETS // 2
-
         abs_relative = tl.abs(relative_positions)
         condition = (relative_positions < mid_val) & (relative_positions > -mid_val)
         abs_pos = tl.where(condition, mid_val - 1.0, abs_relative)
-
         log_numer = tl.log(abs_pos / mid_val)
         log_denom = tl.log((MAX_DISTANCE - 1) / mid_val)
         log_scaled = log_numer / log_denom * (mid_val - 1.0)
         log_pos = tl.ceil(log_scaled) + mid_val
-
         bucket_pos = tl.where(abs_pos <= mid_val, relative_positions, log_pos * sign)
 
         if HAS_C2P:
             c2p_index = tl.minimum(tl.maximum(bucket_pos + ATT_SPAN, 0), 2 * ATT_SPAN - 1).to(tl.int32)
-
-            k_pos_ptrs_ = k_pos_ptrs + c2p_index*stride_pk2
-
-            c2p_bias = tl.load(k_pos_ptrs_, mask=mask_m[:, None] & (c2p_index < 2*ATT_SPAN), other=0.0)
-
+            k_pos_ptrs_ = k_pos_ptrs + c2p_index * stride_pk2
+            c2p_bias = tl.load(k_pos_ptrs_, mask=mask_m[:, None] & (c2p_index < 2 * ATT_SPAN), other=0.0)
             s += c2p_bias * sm_scale
 
         if HAS_P2C:
+            current_q_pos_ptrs = Q_POS + (offs_n[None, :] * stride_pq0 + off_h * stride_pq1)
             p2c_index = tl.minimum(tl.maximum(bucket_pos + ATT_SPAN, 0), 2 * ATT_SPAN - 1).to(tl.int32).trans(1, 0)
-
-            q_pos_ptrs_ = q_pos_ptrs + p2c_index*stride_pq2
-
-            p2c_bias = tl.load(q_pos_ptrs_, mask=mask_n[:, None] & (p2c_index < 2*ATT_SPAN), other=0.0).trans(1, 0)
+            q_pos_ptrs_ = current_q_pos_ptrs + p2c_index * stride_pq2
+            p2c_bias = tl.load(q_pos_ptrs_, mask=mask_n[:, None] & (p2c_index < 2 * ATT_SPAN), other=0.0).trans(1, 0)
             s += p2c_bias * sm_scale
-
-            q_pos_ptrs += BLOCK_N * stride_pq0
 
         s = tl.where(mask_n[None, :], s, float("-inf"))
 
@@ -168,15 +152,15 @@ def _fwd_kernel_deberta_disentangled_attention(
         k_ptrs += BLOCK_N * stride_kz
         v_ptrs += BLOCK_N * stride_vz
 
-    if IS_CAUSAL and lM>lN:
+    if IS_CAUSAL and lM > lN:
         is_empty_line = (offs_m_relative + P_SEQ) < 0
         acc = tl.where(is_empty_line[:, None], 0.0, acc * (1.0 / l_i[:, None]))
-        l = tl.where(is_empty_line, float("-inf"), m_i + tl.log(l_i))
+        l_val = tl.where(is_empty_line, float("-inf"), m_i + tl.log(l_i))
     else:
         acc = acc * (1.0 / l_i[:, None])
-        l = m_i + tl.log(l_i) # log(normalizer)
+        l_val = m_i + tl.log(l_i)
 
-    tl.store(l_ptrs, l, mask=mask_m, cache_modifier=".cg")
+    tl.store(l_ptrs, l_val, mask=mask_m, cache_modifier=".cg")
     tl.store(o_ptrs, acc.to(input_dtype), mask=mask_m[:, None], cache_modifier=".cg")
 
 
