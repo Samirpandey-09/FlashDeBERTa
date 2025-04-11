@@ -63,7 +63,7 @@ def _fwd_kernel_deberta_disentangled_attention(
 
     log2e: tl.constexpr = 1.4426950408889634
 
-    L += off_m * H + off_h
+    L += q_start * H + off_h
 
     offs_m_base = tl.arange(0, BLOCK_M)
     offs_m = offs_m_base+off_m

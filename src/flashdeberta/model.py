@@ -229,6 +229,9 @@ class FlashDebertaV2Encoder(DebertaV2Encoder):
         self.conv = ConvLayer(config) if getattr(config, "conv_kernel_size", 0) > 0 else None
         self.gradient_checkpointing = False
 
+    def get_attention_mask(self, attention_mask):
+        return attention_mask
+    
 class FlashDebertaV2Model(DebertaV2Model):
     def __init__(self, config):
         super().__init__(config)
