@@ -142,7 +142,6 @@ class FlashDisentangledSelfAttention(DisentangledSelfAttention):
 
             if "c2p" in self.pos_att_type:
                 # query_layer = (1, NH, L, head_dim)
-                print(query_layer.shape, pos_key_layer.shape)
                 pos_key = torch.einsum("bqhd,zhmd->bqhm", query_layer, pos_key_layer)
             if "p2c" in self.pos_att_type:
                 pos_query = torch.einsum("bqhd,zhmd->bqhm", key_layer, pos_query_layer)
