@@ -1,6 +1,4 @@
-# FlashDeBERTa 🦾 – Boost inference speed by 3-5x ⚡ and run DeBERTa models on 100k tokens 📚.
-
-![Disentangled Attention](images/flash.png)
+# FlashDeBERTa 🦾 – Boost inference speed by 3-5x ⚡ and run DeBERTa models on long sequences 📚.
 
 **FlashDeBERTa** is an optimized version of the DeBERTa model leveraging flash attention to implement a disentangled attention mechanism. It significantly reduces memory usage and latency, especially with long sequences. The project enables loading and running original DeBERTa models on tens of thousands of tokens without retraining, maintaining original accuracy.
 
@@ -53,5 +51,5 @@ While context-to-position and position-to-context biases still require quadratic
 - Implement backward kernels.
 - Train DeBERTa models on 8,192-token sequences using high-quality data.
 - Integrate FlashDeBERTa into GLiNER and GLiClass.
-- Train multi-modal T5 models.
+- Train multi-modal DeBERTa models.
 

@@ -243,7 +243,7 @@ class FlashDebertaV2Model(DebertaV2Model):
 
 class FlashDebertaV2ForMaskedLM(DebertaV2ForMaskedLM):
     def __init__(self, config):
-        DebertaV2PreTrainedModel().__init__(config)
+        DebertaV2PreTrainedModel.__init__(self, config)
         self.legacy = config.legacy
         self.deberta = FlashDebertaV2Model(config)
         if self.legacy:
@@ -256,7 +256,7 @@ class FlashDebertaV2ForMaskedLM(DebertaV2ForMaskedLM):
 
 class FlashDebertaV2ForSequenceClassification(DebertaV2ForSequenceClassification):
     def __init__(self, config):
-        DebertaV2PreTrainedModel().__init__(config)
+        DebertaV2PreTrainedModel.__init__(self, config)
 
         num_labels = getattr(config, "num_labels", 2)
         self.num_labels = num_labels
@@ -275,7 +275,7 @@ class FlashDebertaV2ForSequenceClassification(DebertaV2ForSequenceClassification
 
 class FlashDebertaV2ForTokenClassification(DebertaV2ForTokenClassification):
     def __init__(self, config):
-        DebertaV2PreTrainedModel().__init__(config)
+        DebertaV2PreTrainedModel.__init__(self, config)
         self.num_labels = config.num_labels
 
         self.deberta = FlashDebertaV2Model(config)
@@ -287,7 +287,7 @@ class FlashDebertaV2ForTokenClassification(DebertaV2ForTokenClassification):
 
 class FlashDebertaV2ForQuestionAnswering(DebertaV2ForQuestionAnswering):
     def __init__(self, config):
-        DebertaV2PreTrainedModel().__init__(config)
+        DebertaV2PreTrainedModel.__init__(self, config)
         self.num_labels = config.num_labels
 
         self.deberta = FlashDebertaV2Model(config)
@@ -298,7 +298,7 @@ class FlashDebertaV2ForQuestionAnswering(DebertaV2ForQuestionAnswering):
 
 class FlashDebertaV2ForMultipleChoice(DebertaV2ForMultipleChoice):
     def __init__(self, config):
-        DebertaV2PreTrainedModel().__init__(config)
+        DebertaV2PreTrainedModel.__init__(self, config)
 
         num_labels = getattr(config, "num_labels", 2)
         self.num_labels = num_labels
